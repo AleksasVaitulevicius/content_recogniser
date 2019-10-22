@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Content recogniser</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+<body>
+    <div class="container-fluid">
+        <h1>Documentation</h1>
+
+        <div class="container-fluid">
+            <h2>Introduction</h2>
+            <div class="container-fluid">
+                <p>This api extracts information from data.</p>
+            </div>
+            <h2>Usage</h2>
+            <div class="container-fluid">
+                <p>Api uses HTTP, method: <b>PUT</b>, path: <b>/</b>, body: <b>form-data</b>.</p>
+                <p>
+                    Api returns result as JSON object with keys taken from submitted form keys and
+                    corresponding values as content descriptions.
+                </p>
+            </div>
+            <h2>Supported forms of data</h2>
+            <div class="container-fluid">
+                <ul>
+                    <li> Image formats:
+                        <ul>
+                            <li>PNG</li>
+                            <li>JPEG</li>
+                        </ul>
+                    </li>
+                    <li> Sound recording formats:
+                        <ul>
+                            <li>MP3</li>
+                        </ul>
+                    </li>
+                    <li>Plain text</li>
+                </ul>
+            </div>
+            <h2>Recognizable contents in data</h2>
+            <div class="container-fluid">
+                <ul>
+                    <li> For images:
+                        <ul>
+                            <li>Faces</li>
+                            <li>Letter/Digit recognition</li>
+                        </ul>
+                    </li>
+                    <li> For sound recordings:
+                        <ul>
+                            <li>Music</li>
+                        </ul>
+                    </li>
+                    <li>For plain texts:
+                        <ul>
+                            <li>Language detection</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
