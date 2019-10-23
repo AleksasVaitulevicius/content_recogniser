@@ -1,5 +1,5 @@
+from django.http import JsonResponse
 from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.shortcuts import render
 from logic import main_service as ms
@@ -13,6 +13,5 @@ class ContentRecognizerController(APIView):
 
     def put(self, request):
         result = ms.process(request.data)
-        print(result)
-        return Response(status=204)
+        return JsonResponse(result, safe=False)
 
