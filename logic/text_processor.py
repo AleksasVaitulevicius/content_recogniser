@@ -3,7 +3,7 @@ import detectlanguage as dl
 dl.configuration.api_key = '1f64cbddd63bd66c8f0052d072d2c36e'
 
 ACTION_LIST = [
-	('language_detection', lambda contents: [content[0] for content in detect_languages(contents)]),
+	# ('language_detection', lambda contents: [content[0] for content in detect_languages(contents)]),
 ]
 
 

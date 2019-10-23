@@ -1,14 +1,17 @@
 import re
-from . import image_processor as img_prc, recording_processor as rec_prc
+from . import image_video_processor as img_vid_prc, recording_processor as rec_prc
 
 CONTENT_TYPES = {
-	'image': img_prc.process,
+	'image': img_vid_prc.process,
 	'audio': rec_prc.process,
 }
 
 
 def get_content_type(content):
-	return re.search(r'(.*)?/', content.content_type).group(1)
+	content_type = re.search(r'(.*)?/', content.content_type).group(1)
+	if content_type == 'video':
+		return 'image'
+	return content_type
 
 
 def process(contents):
