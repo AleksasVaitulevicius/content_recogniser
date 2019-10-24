@@ -1,4 +1,7 @@
+import json
+from concurrent.futures.thread import ThreadPoolExecutor
 from json import JSONDecodeError
+from time import sleep
 
 import requests
 
@@ -8,6 +11,7 @@ API_SECRET = '3ca8e1e572616149abef85c9c2309a9c'
 UPLOAD_URL = API_URL + 'uploads'
 BATCH_URL = API_URL + 'batches'
 TICKET_URL = API_URL + 'tickets/'
+N_SLAVES = 5
 
 BATCH_TEMPLATE = {
 	'/tags': [],
@@ -30,6 +34,12 @@ def upload_image(image):
 		return
 
 
+def upload_in_parallel(images):
+	with ThreadPoolExecutor(N_SLAVES) as executor:
+		future = executor.map(upload_image, images)
+	return future
+
+
 def prepare_batch_param(img_id):
 	param = BATCH_PARAMS_TEMPLATE.copy()
 	param['params'] = param['params'].copy()
@@ -37,30 +47,40 @@ def prepare_batch_param(img_id):
 	return param
 
 
+def get_ticket_result(ticket):
+	response = {'result': {'is_final': False}}
+	while not response['result']['is_final']:
+		sleep(5)
+		response = requests\
+			.get(TICKET_URL + ticket, auth=(API_KEY, API_SECRET))\
+			.json()
+	return response['result']['ticket_result']['final_result']
+
+
 def submit_batch(img_ids):
 	params = [prepare_batch_param(img_id) for img_id in img_ids]
 	body = {endpoint: params for endpoint in BATCH_TEMPLATE}
 	try:
-		print(body)
 		response = requests\
 			.post(BATCH_URL, auth=(API_KEY, API_SECRET), json=body)
-		print('response:', response)
 		ticket = response.json()['result']['ticket_id']
-
-		print('ticket:', ticket)
-
-		response = requests\
-			.get(TICKET_URL + ticket, auth=(API_KEY, API_SECRET))
-		print('response:', response)
-		return response.json()['result']['ticket_result']['final_result']
+		return get_ticket_result(ticket)
 	except (KeyError, JSONDecodeError):
-		print('caught error :/')
 		return
 
 
+def extract_data(keys, results):
+	return results
+
+
 def process(images):
-	img_ids = [upload_image(images[image]) for image in images]
-	img_ids = [img_id for img_id in img_ids if img_id is not None]
-	response = submit_batch(img_ids)
-	print(response)
-	return response
+	keys = images.keys()
+	# contents = images.values()
+	# img_ids = upload_in_parallel(contents)
+	# img_ids = [img_id for img_id in img_ids if img_id is not None]
+	# response = submit_batch(img_ids)
+
+	with open('result.json', 'r') as in_file:
+		response = json.load(in_file)
+
+	return extract_data(keys, response)
