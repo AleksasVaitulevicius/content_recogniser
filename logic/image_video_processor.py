@@ -70,17 +70,21 @@ def submit_batch(img_ids):
 
 
 def extract_data(keys, results):
-	return results
+	extracted = {key: BATCH_TEMPLATE.copy() for key in keys}
+	for result_key in BATCH_TEMPLATE.keys():
+		for key, result in zip(keys, results[result_key]):
+			# if 'ticket_id' in result['result'].keys():
+			# 	result = get_ticket_result(result['result']['ticket_id'])
+			extracted[key][result_key] = result
+	return extracted
 
 
 def process(images):
-	keys = images.keys()
+	# keys = images.keys()
 	# contents = images.values()
 	# img_ids = upload_in_parallel(contents)
 	# img_ids = [img_id for img_id in img_ids if img_id is not None]
 	# response = submit_batch(img_ids)
+	# return extract_data(keys, response)
 
-	with open('result.json', 'r') as in_file:
-		response = json.load(in_file)
-
-	return extract_data(keys, response)
+	return {key: '----' for key in images}
