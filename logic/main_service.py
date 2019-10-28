@@ -16,9 +16,7 @@ def process(data_list):
 	for key in data_list:
 		if isinstance(data_list[key], InMemoryUploadedFile):
 			if 'text' in data_list[key].content_type:
-				print(data_list[key].read())
-			if 'image' in data_list[key].content_type:
-				print(data_list[key])
+				texts[key] = data_list[key].read().decode('utf-8')
 			files[key] = data_list[key]
 		else:
 			texts[key] = data_list[key]

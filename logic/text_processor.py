@@ -6,8 +6,7 @@ dl.configuration.api_key = '1f64cbddd63bd66c8f0052d072d2c36e'
 
 ACTION_LIST = [
 	# ('language_detection', lambda contents: detect_languages(contents)),
-	('1', lambda contents: [content + '1' for content in contents]),
-	('2', lambda contents: [content + '2' for content in contents]),
+	('test_text', lambda contents: ['text' for _ in contents]),
 ]
 N_SLAVES = 2
 
