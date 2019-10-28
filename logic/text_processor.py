@@ -35,6 +35,8 @@ def execute_in_parallel(contents):
 def process(texts):
 	contents = list(texts.values())
 	keys = list(texts.keys())
+	if len(keys) == 0:
+		return {}
 	results = list(zip(*execute_in_parallel(contents)))
 	results = merge_results(results)
 	return dict(zip(keys, results))

@@ -17,8 +17,6 @@ def process_in_parallel(objects):
 
 def get_content_type(content):
 	content_type = re.search(r'(.*)?/', content.content_type).group(1)
-	if content_type == 'video':
-		return 'image'
 	return content_type
 
 
