@@ -87,4 +87,4 @@ def process(images):
 	# img_ids = [img_id for img_id in img_ids if img_id is not None]
 	# response = submit_batch(img_ids)
 	# return extract_data(keys, response)
-	return {key: 'image/video' for key in images}
+	return {key: 'image' for key in images}

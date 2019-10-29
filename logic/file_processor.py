@@ -1,7 +1,7 @@
 import re
 from concurrent.futures.thread import ThreadPoolExecutor
 
-from . import image_video_processor as img_vid_prc, recording_processor as rec_prc
+from . import image_processor as img_vid_prc, recording_processor as rec_prc
 
 CONTENT_TYPES = {
 	'image': img_vid_prc.process,
