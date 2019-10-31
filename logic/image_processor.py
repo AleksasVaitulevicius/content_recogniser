@@ -1,15 +1,8 @@
 from concurrent.futures.thread import ThreadPoolExecutor
-from json import JSONDecodeError
 from time import sleep
-
+from config import Imagga
 import requests
 
-API_URL = "https://api.imagga.com/v2/"
-API_KEY = 'acc_96b4deed7fce633'
-API_SECRET = '3ca8e1e572616149abef85c9c2309a9c'
-UPLOAD_URL = API_URL + 'uploads'
-BATCH_URL = API_URL + 'batches'
-TICKET_URL = API_URL + 'tickets/'
 N_SLAVES = 5
 
 BATCH_TEMPLATE = {
@@ -27,9 +20,9 @@ BATCH_PARAMS_TEMPLATE = {
 def upload_image(image):
 	try:
 		return requests\
-			.post(UPLOAD_URL, auth=(API_KEY, API_SECRET), files={'image': image})\
+			.post(Imagga.UPLOAD_URL, auth=(Imagga.API_KEY, Imagga.API_SECRET), files={'image': image})\
 			.json()['result']['upload_id']
-	except (KeyError, JSONDecodeError):
+	except Exception:
 		return
 
 
@@ -50,9 +43,12 @@ def get_ticket_result(ticket):
 	response = {'result': {'is_final': False}}
 	while not response['result']['is_final']:
 		sleep(5)
-		response = requests\
-			.get(TICKET_URL + ticket, auth=(API_KEY, API_SECRET))\
-			.json()
+		try:
+			response = requests\
+				.get(Imagga.TICKET_URL + ticket, auth=(Imagga.API_KEY, Imagga.API_SECRET))\
+				.json()
+		except Exception:
+			return "error occurred"
 	return response['result']['ticket_result']['final_result']
 
 
@@ -61,11 +57,11 @@ def submit_batch(img_ids):
 	body = {endpoint: params for endpoint in BATCH_TEMPLATE}
 	try:
 		response = requests\
-			.post(BATCH_URL, auth=(API_KEY, API_SECRET), json=body)
+			.post(Imagga.BATCH_URL, auth=(Imagga.API_KEY, Imagga.API_SECRET), json=body)
 		ticket = response.json()['result']['ticket_id']
 		return get_ticket_result(ticket)
-	except (KeyError, JSONDecodeError):
-		return
+	except Exception:
+		return "error occurred"
 
 
 def extract_data(keys, results):
@@ -79,12 +75,11 @@ def extract_data(keys, results):
 
 
 def process(images):
-	# keys = images.keys()
-	# if len(keys) == 0:
-	# 	return {}
-	# contents = images.values()
-	# img_ids = upload_in_parallel(contents)
-	# img_ids = [img_id for img_id in img_ids if img_id is not None]
-	# response = submit_batch(img_ids)
-	# return extract_data(keys, response)
-	return {key: 'image' for key in images}
+	keys = images.keys()
+	if len(keys) == 0:
+		return {}
+	contents = images.values()
+	img_ids = upload_in_parallel(contents)
+	img_ids = [img_id for img_id in img_ids if img_id is not None]
+	response = submit_batch(img_ids)
+	return extract_data(keys, response)

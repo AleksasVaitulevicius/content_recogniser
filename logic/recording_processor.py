@@ -2,31 +2,41 @@ from concurrent.futures.thread import ThreadPoolExecutor
 from acrcloud.recognizer import ACRCloudRecognizer
 from ibm_watson import SpeechToTextV1
 from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
+from config import AcrCloud, WatsonStt
 import json
 
 SLAVES = 5
-re = ACRCloudRecognizer({
-	'host': 'identify-eu-west-1.acrcloud.com',
-	'access_key': '9e9a124e292b7d0161e4ea997fff8f6b',
-	'access_secret': 'fLtsJPamnjz6nlCiTO7aaXivZR4VYxNSgFOu4V8e',
-	'timeout': 10  # seconds
-})
-ibm_auth = IAMAuthenticator('s4Od7pNSAaRJbDVJnck1P3R3OonJzdhK11RGYuDOYZPl')
+re = ACRCloudRecognizer(AcrCloud)
+ibm_auth = IAMAuthenticator(WatsonStt.API_KEY)
 stt = SpeechToTextV1(authenticator=ibm_auth)
-stt.set_service_url('https://gateway-lon.watsonplatform.net/speech-to-text/api')
+stt.set_service_url(WatsonStt.SERVICE_URL)
 
 
-def slave(recs):
+def slave(rec):
 	return {
-		recs[0]: {
-			'music': json.loads(re.recognize_by_filebuffer(recs[1].read(), 0, 600)),
-			'speech': stt.recognize(
-				recs[1],
-				content_type=recs[1].content_type,
-				word_alternatives_threshold=0.9
-			).get_result()
+		rec[0]: {
+			'music': process_music(rec[1]),
+			'speech': process_speech(rec[1])
 		}
 	}
+
+
+def process_music(rec):
+	try:
+		return stt.recognize(
+			rec,
+			content_type=rec.content_type,
+			word_alternatives_threshold=0.9
+		).get_result()
+	except Exception:
+		return "error occurred"
+
+
+def process_speech(rec):
+	try:
+		return json.loads(re.recognize_by_filebuffer(rec.read(), 0, 600))
+	except Exception:
+		return "error occurred"
 
 
 def process(recordings):
