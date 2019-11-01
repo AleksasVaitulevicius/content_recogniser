@@ -21,7 +21,7 @@ def slave(rec):
 	}
 
 
-def process_music(rec):
+def process_speech(rec):
 	try:
 		return stt.recognize(
 			rec,
@@ -32,7 +32,7 @@ def process_music(rec):
 		return "error occurred"
 
 
-def process_speech(rec):
+def process_music(rec):
 	try:
 		return json.loads(re.recognize_by_filebuffer(rec.read(), 0, 600))
 	except Exception:
