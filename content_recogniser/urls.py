@@ -17,8 +17,10 @@ from django.urls import path
 from django.contrib import admin
 
 import apis
+import authentication
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('login', authentication.Authentication.as_view()),
     path('', apis.ContentRecognizerController.as_view()),
 ]

@@ -1,4 +1,4 @@
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from django.shortcuts import render
@@ -8,10 +8,14 @@ from logic import main_service as ms
 class ContentRecognizerController(APIView):
     permission_classes = (AllowAny,)
 
-    def get(self, request):
+    @staticmethod
+    def get(request):
         return render(request, 'documentation.html')
 
-    def put(self, request):
+    @staticmethod
+    def put(request):
+        if not request.user.is_authenticated:
+            return HttpResponse(status=401)
         result = ms.process(request.data)
         return JsonResponse(result, safe=False)
 
