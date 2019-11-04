@@ -70,6 +70,7 @@ def extract_data(keys, results):
 		if isinstance(results, str):
 			for key in keys:
 				extracted[key][result_key] = results
+			continue
 		for key, result in zip(keys, results[result_key]):
 			if 'result' in result.keys() and 'ticket_id' in result['result'].keys():
 				result = get_ticket_result(result['result']['ticket_id'])
