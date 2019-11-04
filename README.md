@@ -14,8 +14,17 @@ This api extracts information from data.
 
 ## Use instructions and documentation
 
-Api uses HTTP, method: __PUT__, path: __/__, body: __form-data__.
+To login use  HTTP, method: __POST__, path: __/login__, body: 
+``
+{
+    "username": "<your-user-name>",
+    "password": "<your-password>"
+}
+``
+Api returns cookies for authorization. __Note__: You are also required to set header `X-CSRFToken` with value from 
+cookie: `csrftoken`
 
+To get result use HTTP, method: __PUT__, path: __/__, body: __form-data__.
 Api returns result as JSON object with keys taken from submitted form keys and
 corresponding values as content descriptions.
 

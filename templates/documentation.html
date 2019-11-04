@@ -16,8 +16,20 @@
             </div>
             <h2>Usage</h2>
             <div class="container-fluid">
-                <p>Api uses HTTP, method: <b>PUT</b>, path: <b>/</b>, body: <b>form-data</b>.</p>
                 <p>
+                    To login use  HTTP, method: <b>POST</b>, path: <b>/login</b>, body:
+                    <b>
+                        {
+                            "username": "&lt;your-user-name&gt;",
+                            "password": "&lt;your-password&gt;"
+                        }
+                    </b>.
+                    Api returns cookies for authorization.
+                </p>
+                <p>
+                    To get result use HTTP, method: <b>PUT</b>, path: <b>/</b>, body: <b>form-data</b>.
+                    <b>Note</b>: In order to authorize: use cookies acquired after login and
+                    set header <i>X-CSRFToken</i> with value from cookie: <i>csrftoken</i>.
                     Api returns result as JSON object with keys taken from submitted form keys and
                     corresponding values as content descriptions.
                 </p>
