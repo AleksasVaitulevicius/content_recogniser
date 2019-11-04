@@ -68,7 +68,7 @@ def extract_data(keys, results):
 	extracted = {key: BATCH_TEMPLATE.copy() for key in keys}
 	for result_key in BATCH_TEMPLATE.keys():
 		for key, result in zip(keys, results[result_key]):
-			if 'ticket_id' in result['result'].keys():
+			if 'result' in result.keys() and 'ticket_id' in result['result'].keys():
 				result = get_ticket_result(result['result']['ticket_id'])
 			extracted[key][result_key] = result
 	return extracted
