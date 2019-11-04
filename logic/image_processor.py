@@ -67,6 +67,9 @@ def submit_batch(img_ids):
 def extract_data(keys, results):
 	extracted = {key: BATCH_TEMPLATE.copy() for key in keys}
 	for result_key in BATCH_TEMPLATE.keys():
+		if isinstance(results, str):
+			for key in keys:
+				extracted[key][result_key] = results
 		for key, result in zip(keys, results[result_key]):
 			if 'result' in result.keys() and 'ticket_id' in result['result'].keys():
 				result = get_ticket_result(result['result']['ticket_id'])
