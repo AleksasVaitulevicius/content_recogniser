@@ -28,15 +28,17 @@ def process_speech(rec):
 			content_type=rec.content_type,
 			word_alternatives_threshold=0.9
 		).get_result()
-	except Exception:
-		return "error occurred"
+	except Exception as e:
+		print(e)
+		return "error occurred:" + str(e)
 
 
 def process_music(rec):
 	try:
 		return json.loads(re.recognize_by_filebuffer(rec.read(), 0, 600))
-	except Exception:
-		return "error occurred"
+	except Exception as e:
+		print(e)
+		return "error occurred:" + str(e)
 
 
 def process(recordings):

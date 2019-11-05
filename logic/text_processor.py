@@ -13,7 +13,7 @@ ta.set_service_url(WatsonTA.SERVICE_URL)
 
 ACTION_LIST = [
 	('language_detection', lambda contents: detect_languages(contents)),
-	('tone_analysis', lambda contents: detect_tone(contents)),
+	# ('tone_analysis', lambda contents: detect_tone(contents)),
 ]
 N_SLAVES = 2
 
