@@ -12,15 +12,6 @@ stt = SpeechToTextV1(authenticator=ibm_auth)
 stt.set_service_url(WatsonStt.SERVICE_URL)
 
 
-def slave(rec):
-	return {
-		rec[0]: {
-			'music': process_music(rec[1]),
-			'speech': process_speech(rec[1])
-		}
-	}
-
-
 def process_speech(rec):
 	try:
 		return stt.recognize(
@@ -39,6 +30,23 @@ def process_music(rec):
 	except Exception as e:
 		print(e)
 		return "error occurred:" + str(e)
+
+
+ACTION_LIST = [
+	('music', process_music),
+	('speech', process_speech),
+]
+
+
+def slave(rec):
+	if len(ACTION_LIST) == 0:
+		return {rec[0]: ""}
+	action_value_tuples = [(action, rec[1]) for _, action in ACTION_LIST]
+	with ThreadPoolExecutor(len(ACTION_LIST)) as executor:
+		future = executor.map(lambda action_value: action_value[0](action_value[1]), action_value_tuples)
+	return {
+		rec[0]: {key: result for (key, _), result in zip(ACTION_LIST, future)}
+	}
 
 
 def process(recordings):
