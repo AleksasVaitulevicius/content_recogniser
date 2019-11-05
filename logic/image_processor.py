@@ -2,6 +2,7 @@ from concurrent.futures.thread import ThreadPoolExecutor
 from time import sleep
 from config import Imagga
 import requests
+import json
 
 N_SLAVES = 5
 
@@ -10,68 +11,83 @@ BATCH_TEMPLATE = {
 	'/text': [],
 	'/colors': [],
 }
-BATCH_PARAMS_TEMPLATE = {
-	'params': {
-		'image_upload_id': '',
-	}
-}
+
+
+def send_request(func, retries, url, json_data, extract_by_keys, return_on_err, **kwargs):
+	for try_no in range(1, retries + 1):
+		try:
+			if func == requests.get:
+				result = requests.get(url=url, **kwargs)
+			else:
+				result = func(url, None, json_data, **kwargs)
+			if not result:
+				print(result.content)
+				raise Exception(result.reason + ': ' + str(result.status_code))
+			result = result.json()['result']
+			for key in extract_by_keys:
+				result = result[key]
+			return result
+		except Exception as e:
+			print('exception:', e)
+			continue
+	return return_on_err
 
 
 def upload_image(image):
-	try:
-		return requests\
-			.post(Imagga.UPLOAD_URL, auth=(Imagga.API_KEY, Imagga.API_SECRET), files={'image': image})\
-			.json()['result']['upload_id']
-	except Exception:
-		return
+	return send_request(
+		requests.post, 1, Imagga.UPLOAD_URL, None, ['upload_id'], None,
+		auth=(Imagga.API_KEY, Imagga.API_SECRET), files={'image': image}
+	)
 
 
 def upload_in_parallel(images):
 	with ThreadPoolExecutor(N_SLAVES) as executor:
 		future = executor.map(upload_image, images)
+	if len(list(future)) == 0:
+		raise Exception('Error occurred while uploading image')
 	return future
 
 
 def prepare_batch_param(img_id):
-	param = BATCH_PARAMS_TEMPLATE.copy()
-	param['params'] = param['params'].copy()
-	param['params']['image_upload_id'] = img_id
-	return param
+	return {
+		'params': {
+			'image_upload_id': img_id
+		}
+	}
 
 
 def get_ticket_result(ticket):
-	response = {'result': {'is_final': False}}
-	while not response['result']['is_final']:
+	response = {'is_final': False}
+	while isinstance(response, dict) and not response['is_final']:
 		sleep(5)
-		try:
-			response = requests\
-				.get(Imagga.TICKET_URL + ticket, auth=(Imagga.API_KEY, Imagga.API_SECRET))\
-				.json()
-		except Exception:
-			return "error occurred"
-	return response['result']['ticket_result']['final_result']
+		response = send_request(
+			requests.get, 1, Imagga.TICKET_URL + ticket, None, [], 'error occurred while getting ticket',
+			auth=(Imagga.API_KEY, Imagga.API_SECRET)
+		)
+	if isinstance(response, str):
+		return response
+	return response['ticket_result']['final_result']
 
 
 def submit_batch(img_ids):
 	params = [prepare_batch_param(img_id) for img_id in img_ids]
 	body = {endpoint: params for endpoint in BATCH_TEMPLATE}
-	try:
-		response = requests\
-			.post(Imagga.BATCH_URL, auth=(Imagga.API_KEY, Imagga.API_SECRET), json=body)
-		ticket = response.json()['result']['ticket_id']
-		return get_ticket_result(ticket)
-	except Exception:
-		return "error occurred"
+	ticket = send_request(
+		requests.post, 1, Imagga.BATCH_URL, body, ['ticket_id'], 'error occurred while submitting batch',
+		auth=(Imagga.API_KEY, Imagga.API_SECRET)
+	)
+	if ticket == 'error occurred while submitting batch':
+		raise Exception('error occurred while submitting batch')
+	return get_ticket_result(ticket)
 
 
-def extract_data(keys, results):
+def extract_data(keys, results, unloaded_img_ids):
 	extracted = {key: BATCH_TEMPLATE.copy() for key in keys}
 	for result_key in BATCH_TEMPLATE.keys():
-		if isinstance(results, str):
-			for key in keys:
-				extracted[key][result_key] = results
-			continue
 		for key, result in zip(keys, results[result_key]):
+			if key in unloaded_img_ids:
+				extracted[key][result_key] = 'error occurred while uploading image'
+				continue
 			if 'result' in result.keys() and 'ticket_id' in result['result'].keys():
 				result = get_ticket_result(result['result']['ticket_id'])
 			extracted[key][result_key] = result
@@ -84,6 +100,12 @@ def process(images):
 		return {}
 	contents = images.values()
 	img_ids = upload_in_parallel(contents)
+	# with open('img_ids.json', 'r') as img_ids_file:
+	# 	img_ids = json.load(img_ids_file)
+	unloaded_img_ids = [img_id for key, img_id in zip(keys, img_ids) if img_id is None]
 	img_ids = [img_id for img_id in img_ids if img_id is not None]
-	response = submit_batch(img_ids)
-	return extract_data(keys, response)
+	try:
+		response = submit_batch(img_ids)
+	except Exception as e:
+		return {key: str(e) for key in keys}
+	return extract_data(keys, response, unloaded_img_ids)
