@@ -24,6 +24,8 @@ def send_request(key, image):
 
 
 def process(images):
+	if len(images.items()) == 0:
+		return {}
 	with ThreadPoolExecutor(len(images.items())) as executor:
 		future = executor.map(send_request, images.keys(), images.values())
 	return {key: description for result in list(future) for key, description in result.items()}
