@@ -1,6 +1,8 @@
 import re
 from concurrent.futures.thread import ThreadPoolExecutor
 
+from filetype import filetype
+
 from . import image_processor as img_vid_prc, recording_processor as rec_prc
 
 CONTENT_TYPES = {
@@ -16,8 +18,12 @@ def process_in_parallel(objects):
 
 
 def get_content_type(content):
-	content_type = re.search(r'(.*)?/', content.content_type).group(1)
-	return content_type
+	if content.content_type == '':
+		content.content_type = filetype.guess_mime(content)
+	if content.content_type is None:
+		content.content_type = ''
+		return ''
+	return re.search(r'(.*)?/', content.content_type).group(1)
 
 
 def process(contents):

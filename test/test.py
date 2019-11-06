@@ -1,9 +1,11 @@
+import json
 from sdk.content_recogniser_sdk import ContentRecogniserSDK
 
 
 def main():
 	sdk = ContentRecogniserSDK('aleksas', 'ginkluote69')
-	print(sdk.recognise())
+	result = sdk.recognise_from_directory('./test_files')
+	print(json.dumps(result, indent=4, separators=(',', ': ')))
 
 
 if __name__ == '__main__':
