@@ -1,4 +1,4 @@
-Django==2.2.6
+Django==2.2.13
 djangorestframework==3.10.3
 request==2019.4.13
 requests==2.22.0
